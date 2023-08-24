@@ -20,6 +20,7 @@ typedef struct arco_json{
     int child_num;
     char* key;
     void* value;
+    struct arco_json* parent;
     struct arco_json* next;
 }arco_json;
 
@@ -80,6 +81,20 @@ arco_json* new_json_int(int value)
     return json;
 }
 
+arco_json* new_json_empty()
+{
+    // 分配内存
+    arco_json* json = malloc(sizeof(arco_json));
+    // 设置json类型
+    json->type = json_type_null;
+    json->depth = 0;
+    json->child_num = 0;
+    json->next = NULL;
+    // 填充kv
+    json->key = NULL;
+    json->value = NULL;
+}
+
 int get_json_type(arco_json* json)
 {
     if (json != NULL) {
@@ -100,6 +115,7 @@ int json_object_add(arco_json* json, char* key, arco_json* j_add)
     // if cur json has none value
     if (json->value == NULL) {
         json->value = j_add;
+        j_add->parent = json;
         j_add->key = malloc(strlen(key) + 1);
         memcpy(j_add->key, key, strlen(key) + 1);
         json->child_num++;
@@ -112,6 +128,7 @@ int json_object_add(arco_json* json, char* key, arco_json* j_add)
         j_add->key = malloc(strlen(key) + 1);
         memcpy(j_add->key, key, strlen(key) + 1);
         arco->next = j_add;
+        j_add->parent = arco->parent;
         json->child_num++;
     }
     return 0;
@@ -135,6 +152,7 @@ int json_array_add(arco_json* json, arco_json* j_add)
             arco = arco->next;
         }
         arco->next = j_add;
+        j_add->parent = arco->parent;
         json->child_num++;
     }
     return 0;
@@ -315,6 +333,70 @@ char* json_to_string(arco_json* json)
     g_json_str = NULL;
     return json_str;
 }
+
+char* str_get_here_to_there(char* str, int position, char c)
+{
+    int i, size = 1;
+    char* dst = NULL;
+    for (i = position; i < strlen(str); i++) {
+        if (str[i] != c) size++;
+        else break;
+    }
+    dst = malloc(sizeof(char) * size);
+    for (i = position; i < strlen(str); i++) {
+        if (str[i] != c) dst[i - position] = str[i];
+        else {
+            dst[i - position] = '\0';
+            return dst;
+        }
+    }
+    return NULL;
+}
+
+int string_to_json(char* str)
+{
+    int i, str_len = (int) strlen(str);
+    int key_flag = 0, colon_flag = 0;
+    char cur_key[64];
+    arco_json* json = NULL;
+
+    if (str[0] == '{') {
+        json = new_json_object();
+    }
+
+    arco_json* p_json = json;
+    for (i = 0; i < str_len; i++) {
+
+        if (str[i] == '"') {
+            if (++key_flag == 2) {
+                key_flag = 0;
+            }
+            else {
+                if (colon_flag == 0) {
+                    p_json->key = str_get_here_to_there(str, i, '"');
+                }
+                else {
+                    p_json->value = str_get_here_to_there(str, i, '"');
+                }
+            }
+        }
+
+        if (str[i] == ':') {
+            colon_flag = 1;
+        }
+
+        if (str[i] == '{') {
+
+        }
+
+        if (str[i] == ',') {
+
+        }
+
+    }
+}
+
+
 
 // TODO test arcojson use
 int main()
