@@ -7,8 +7,6 @@
 #include "string.h"
 #include "arcojson.h"
 
-#define v0.0
-
 int g_json_char_num = 0;
 char* g_json_str = NULL;
 

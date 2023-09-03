@@ -1,3 +1,7 @@
+#ifndef ARCOJSON_ARCOJSON_H
+#define ARCOJSON_ARCOJSON_H
+
+#define VERSION v0.0
 enum json_type{
     json_type_empty,
     json_type_object,
@@ -28,3 +32,4 @@ int calculate_json_str_length(arco_json* json);
 char* json_to_string(arco_json* json);
 arco_json* string_to_json(char* str);
 
+#endif //ARCOJSON_ARCOJSON_H
