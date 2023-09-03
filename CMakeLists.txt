@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
 project(arcojson)
-include(arcojson.h)
-add_executable(arcojson_test arcojson.c)
-add_library(arcojson_lib SHARED arcojson.c)
+include_directories(.)
+add_executable(arcojson_test arcojson.c example.c)
+add_library(arcojson SHARED arcojson.c)
