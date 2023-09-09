@@ -133,6 +133,79 @@ void str_to_json_null_test()
     printf("str_to_json_null:%s  %s\n", json_to_string(json), json_to_string(json2));
 }
 
+void json_depth_expand_print(arco_json* json, int depth)
+{
+//    printf("depth=%d\n", depth);
+    if (get_json_type(json) == json_type_array) {
+        if (json->key != NULL && depth > 0) printf("\"%s\":", json->key);
+        printf("[");
+        json_depth_expand_print(json->value, depth + 1);
+    }
+    if (get_json_type(json) == json_type_object) {
+        if (json->key != NULL && depth > 0) printf("\"%s\":", json->key);
+        printf("{");
+        json_depth_expand_print(json->value, depth + 1);
+    }
+    if (json->type == json_type_string) {
+        printf("\"%s\":", json->key);
+        printf("\"%s\"", (char*) json->value);
+        if (json->next != NULL) printf(",");
+    }
+    if (json->type == json_type_long) {
+        printf("\"%s\":", json->key);
+        printf("%d", *(int*) json->value);
+        if (json->next != NULL) printf(",");
+    }
+    if (json->type == json_type_empty) {
+        printf("tmd empty\n");
+    }
+
+    if (get_json_type(json) == json_type_array) {
+        printf("]");
+        if (json->next != NULL && depth > 0) printf(",");
+    }
+    if (get_json_type(json) == json_type_object) {
+        printf("}");
+        if (json->next != NULL && depth > 0) printf(",");
+    }
+
+    // 横向搜索
+    if (json->next != NULL && depth > 0) {
+        json_depth_expand_print(json->next, depth);
+    }
+}
+
+void get_json_value_test()
+{
+    arco_json* json = new_json_array();
+    arco_json* json0 = new_json_object();
+    json_object_add(json0, "key00", new_json_long(123));
+    json_object_add(json0, "key01", new_json_string("value01"));
+    json_object_add(json0, "key02", new_json_string("value02"));
+    arco_json* json1 = new_json_object();
+    arco_json* json10 = new_json_object();
+    json_object_add(json10, "key10", new_json_string("value10"));
+    json_object_add(json10, "key11", new_json_long(1234567));
+    json_object_add(json1, "key1", json10);
+    json_array_add(json, json0);
+    json_array_add(json, json1);
+
+    printf("get_json_value_test:%s\n", json_to_string(json));
+
+    arco_json* get_obj_by_idx = get_object_from_array(json, 1);
+    printf("get_obj_by_idx:%s\n", json_to_string(get_obj_by_idx));
+
+    arco_json* get_obj_by_key = get_object_from_object(get_obj_by_idx, "key1");
+    printf("get_obj_by_key:%s\n", json_to_string(get_obj_by_key));
+
+    char* get_str = get_string_from_object(get_obj_by_key, "key10");
+    printf("get_str_value:%s\n", get_str);
+
+    long get_long = get_long_from_object(get_obj_by_key, "key11");
+    printf("get_str_value:%ld\n", get_long);
+
+}
+
 int main()
 {
     // 创建json对象示例
@@ -155,6 +228,8 @@ int main()
     create_json_null_test();
     str_to_json_null_test();
     printf("\n");
+    // json对象获取值示例(数组 对象 字符串 数值
+    get_json_value_test();
 
     return 0;
 }

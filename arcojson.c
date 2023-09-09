@@ -342,3 +342,86 @@ arco_json* string_to_json(char* str)
     }
     return json;
 }
+
+
+char* get_string_from_object(arco_json* json, char* key)
+{
+    if (json == NULL) return NULL;
+    if (json->type != json_type_object) return NULL;
+    if (json->value == NULL) return NULL;
+
+    arco_json* p_json = json->value;
+    while (p_json != NULL) {
+        if (p_json->type == json_type_string) {
+            if (strcmp((char*) p_json->key, key) == 0) {
+                size_t length = strlen((char*) p_json->value);
+                char* res = malloc(sizeof(length + 1));
+                memcpy(res, p_json->value, length + 1);
+                return res;
+            }
+        }
+        p_json = p_json->next;
+    }
+    return NULL;
+}
+
+long get_long_from_object(arco_json* json, char* key)
+{
+    if (json == NULL) return -1;
+    if (json->type != json_type_object) return -1;
+    if (json->value == NULL) return -1;
+
+    arco_json* p_json = json->value;
+    while (p_json != NULL) {
+        if (p_json->type == json_type_long) {
+            if (strcmp((char*) p_json->key, key) == 0) {
+                long res = *(long*) p_json->value;
+                return res;
+            }
+        }
+        p_json = p_json->next;
+    }
+    return -1;
+}
+
+arco_json* get_object_from_object(arco_json* json, char* key)
+{
+    if (json == NULL) return NULL;
+    if (json->type != json_type_object) return NULL;
+    if (json->value == NULL) return NULL;
+
+    arco_json* p_json = json->value;
+    while (p_json != NULL) {
+        if (p_json->type == json_type_object) {
+            if (strcmp((char*) p_json->key, key) == 0) {
+                arco_json* res = malloc(sizeof(arco_json));
+                memcpy(res, p_json, sizeof(arco_json));
+                return res;
+            }
+        }
+        p_json = p_json->next;
+    }
+    return NULL;
+}
+
+arco_json* get_object_from_array(arco_json* json, int idx)
+{
+    if (json == NULL) return NULL;
+    if (json->type != json_type_array) return NULL;
+    if (json->value == NULL) return NULL;
+
+    int i = 0;
+    arco_json* p_json = json->value;
+    while (p_json != NULL) {
+        if (p_json->type == json_type_object) {
+            if (i == idx) {
+                arco_json* res = malloc(sizeof(arco_json));
+                memcpy(res, p_json, sizeof(arco_json));
+                return res;
+            }
+        }
+        p_json = p_json->next;
+        i++;
+    }
+    return NULL;
+}
